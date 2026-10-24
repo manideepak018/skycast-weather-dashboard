@@ -1,0 +1,610 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>SkyCast | Weather Dashboard</title>
+
+    <style>
+        :root {
+            --background: #080808;
+            --surface: #111820;
+            --surface-hover: #172433;
+            --blue: #2A9DF4;
+            --blue-light: #64BCFF;
+            --text: #F5F9FF;
+            --muted: #A7B5C7;
+            --border: rgba(42, 157, 244, 0.24);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            min-height: 100vh;
+            padding: 32px 18px;
+            font-family: "Segoe UI", Arial, sans-serif;
+            color: var(--text);
+            background:
+                radial-gradient(
+                    circle at 85% 10%,
+                    rgba(42, 157, 244, 0.14),
+                    transparent 32%
+                ),
+                linear-gradient(
+                    135deg,
+                    #050505,
+                    #080808 65%,
+                    #071522
+                );
+        }
+
+        .app {
+            width: 100%;
+            max-width: 850px;
+            margin: auto;
+        }
+
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+            margin-bottom: 38px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-icon {
+            display: grid;
+            place-items: center;
+            width: 48px;
+            height: 48px;
+            border: 1px solid var(--border);
+            border-radius: 15px;
+            background: var(--surface);
+            font-size: 25px;
+        }
+
+        .brand h1 {
+            font-size: 24px;
+            letter-spacing: 0.5px;
+        }
+
+        .brand p {
+            margin-top: 4px;
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .live-label {
+            padding: 9px 13px;
+            border: 1px solid var(--border);
+            border-radius: 30px;
+            background: #0D1117;
+            color: var(--blue-light);
+            font-size: 12px;
+            white-space: nowrap;
+        }
+
+        .intro {
+            margin-bottom: 25px;
+        }
+
+        .eyebrow {
+            margin-bottom: 11px;
+            color: var(--blue-light);
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .intro h2 {
+            margin-bottom: 11px;
+            font-size: clamp(28px, 5vw, 42px);
+            line-height: 1.15;
+        }
+
+        .intro > p:last-child {
+            color: var(--muted);
+            line-height: 1.6;
+        }
+
+        .search-panel {
+            padding: 10px;
+            margin-bottom: 25px;
+            border: 1px solid var(--border);
+            border-radius: 17px;
+            background: #0D1117;
+        }
+
+        .search-form {
+            display: flex;
+            gap: 10px;
+        }
+
+        .search-form input {
+            flex: 1;
+            min-width: 0;
+            padding: 15px 17px;
+            border: 1px solid #263747;
+            border-radius: 11px;
+            outline: none;
+            background: #080B10;
+            color: var(--text);
+            font-size: 15px;
+        }
+
+        .search-form input::placeholder {
+            color: #8190A5;
+        }
+
+        .search-form input:focus {
+            border-color: var(--blue);
+            box-shadow: 0 0 0 3px rgba(42, 157, 244, 0.12);
+        }
+
+        .search-form button {
+            padding: 14px 21px;
+            border: none;
+            border-radius: 11px;
+            background: linear-gradient(
+                135deg,
+                var(--blue),
+                #1675C5
+            );
+            color: white;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 18px rgba(42, 157, 244, 0.2);
+            transition: transform 0.2s, filter 0.2s;
+        }
+
+        .search-form button:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.15);
+        }
+
+        .error {
+            margin-bottom: 22px;
+            padding: 15px;
+            border: 1px solid rgba(255, 100, 120, 0.35);
+            border-radius: 13px;
+            background: #241116;
+            color: #FFCAD2;
+            line-height: 1.6;
+        }
+
+        .weather-panel {
+            overflow: hidden;
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            background: linear-gradient(
+                145deg,
+                #10151C,
+                #080B10
+            );
+            box-shadow: 0 20px 55px rgba(0, 0, 0, 0.4);
+            animation: appear 0.45s ease;
+        }
+
+        .weather-main {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            padding: 30px;
+        }
+
+        .location-label {
+            margin-bottom: 10px;
+            color: var(--blue-light);
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+        }
+
+        .city-name {
+            overflow-wrap: anywhere;
+            font-size: clamp(24px, 4vw, 33px);
+        }
+
+        .country {
+            margin-top: 7px;
+            color: var(--muted);
+        }
+
+        .temperature {
+            margin-top: 22px;
+            color: var(--text);
+            font-size: clamp(52px, 10vw, 76px);
+            font-weight: 300;
+            letter-spacing: -3px;
+        }
+
+        .temperature-unit {
+            font-size: 0.48em;
+            letter-spacing: 0;
+        }
+
+        .weather-caption {
+            margin-top: 10px;
+            color: var(--blue-light);
+            font-size: 14px;
+        }
+
+        .weather-illustration {
+            display: grid;
+            place-items: center;
+            flex-shrink: 0;
+            width: clamp(105px, 22vw, 175px);
+            height: clamp(105px, 22vw, 175px);
+            border: 1px solid var(--border);
+            border-radius: 50%;
+            background: radial-gradient(
+                circle,
+                rgba(42, 157, 244, 0.20),
+                transparent 70%
+            );
+            font-size: clamp(55px, 10vw, 88px);
+            animation: float 4s ease-in-out infinite;
+        }
+
+        .divider {
+            height: 1px;
+            margin: 0 30px;
+            background: var(--border);
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px;
+            padding: 24px 30px 30px;
+        }
+
+        .stat-card {
+            padding: 20px;
+            border: 1px solid rgba(42, 157, 244, 0.15);
+            border-radius: 17px;
+            background: var(--surface);
+            transition: background 0.2s, transform 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            background: var(--surface-hover);
+        }
+
+        .stat-heading {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 17px;
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .stat-icon {
+            display: grid;
+            place-items: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: rgba(42, 157, 244, 0.13);
+            font-size: 20px;
+        }
+
+        .stat-value {
+            overflow-wrap: anywhere;
+            font-size: clamp(20px, 4vw, 27px);
+            font-weight: 600;
+        }
+
+        .stat-unit {
+            font-size: 0.7em;
+            font-weight: 400;
+        }
+
+        .stat-note {
+            margin-top: 7px;
+            color: #8294AA;
+            font-size: 12px;
+        }
+
+        .reading-time {
+            padding: 0 20px 25px;
+            color: var(--muted);
+            font-size: 12px;
+            text-align: center;
+            overflow-wrap: anywhere;
+        }
+
+        .empty-state {
+            padding: 40px 24px;
+            border: 1px solid var(--border);
+            border-radius: 22px;
+            background: #0D1117;
+            text-align: center;
+        }
+
+        .empty-icon {
+            margin-bottom: 17px;
+            font-size: 56px;
+        }
+
+        .empty-state h3 {
+            margin-bottom: 10px;
+            font-size: 21px;
+        }
+
+        .empty-state p {
+            color: var(--muted);
+            line-height: 1.7;
+        }
+
+        .footer {
+            padding: 28px 10px 8px;
+            color: #8294AA;
+            font-size: 12px;
+            line-height: 1.9;
+            text-align: center;
+        }
+
+        .footer span {
+            color: var(--blue);
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-9px);
+            }
+        }
+
+        @keyframes appear {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 520px) {
+            body {
+                padding: 22px 13px;
+            }
+
+            .topbar {
+                margin-bottom: 29px;
+            }
+
+            .brand h1 {
+                font-size: 21px;
+            }
+
+            .live-label {
+                padding: 8px 9px;
+                font-size: 10px;
+            }
+
+            .search-form {
+                flex-direction: column;
+            }
+
+            .search-form button {
+                width: 100%;
+            }
+
+            .weather-main {
+                padding: 24px 18px;
+                gap: 10px;
+            }
+
+            .temperature {
+                letter-spacing: -2px;
+            }
+
+            .divider {
+                margin: 0 18px;
+            }
+
+            .stats {
+                padding: 19px;
+                gap: 10px;
+            }
+
+            .stat-card {
+                padding: 14px;
+            }
+
+            .stat-heading {
+                gap: 7px;
+                font-size: 12px;
+            }
+
+            .stat-icon {
+                width: 34px;
+                height: 34px;
+                font-size: 18px;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                animation: none !important;
+                transition: none !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main class="app">
+
+        <header class="topbar">
+            <div class="brand">
+                <div class="brand-icon">🌦️</div>
+
+                <div>
+                    <h1>SkyCast</h1>
+                    <p>Weather, beautifully simple</p>
+                </div>
+            </div>
+
+            <div class="live-label">● WEATHER DASHBOARD</div>
+        </header>
+
+        <section class="intro">
+            <p class="eyebrow">Your weather, at a glance</p>
+
+            <h2>Find your city's forecast.</h2>
+
+            <p>
+                Search for a city to explore its current
+                weather conditions.
+            </p>
+        </section>
+
+        <section class="search-panel">
+            <form class="search-form" action="/" method="get">
+                <input
+                    type="text"
+                    name="city"
+                    placeholder="Try Hyderabad or Visakhapatnam..."
+                    value="{{ city }}"
+                    aria-label="City name"
+                    required
+                >
+
+                <button type="submit">Search weather ↗</button>
+            </form>
+        </section>
+
+        {% if error %}
+            <div class="error" role="alert">
+                ⚠️ {{ error }}
+            </div>
+        {% endif %}
+
+        {% if weather %}
+            <section class="weather-panel">
+
+                <div class="weather-main">
+                    <div>
+                        <p class="location-label">
+                            📍 CURRENT LOCATION
+                        </p>
+
+                        <h2 class="city-name">
+                            {{ weather.city }}
+                        </h2>
+
+                        <p class="country">
+                            {{ weather.country }}
+                        </p>
+
+                        <div class="temperature">
+                            {{ weather.temperature }}<span class="temperature-unit">{{ weather.temperature_unit }}</span>
+                        </div>
+
+                        <p class="weather-caption">
+                            {{ weather.icon }} {{ weather.condition }}
+                        </p>
+                    </div>
+
+                    <div
+                        class="weather-illustration"
+                        role="img"
+                        aria-label="{{ weather.condition }}"
+                    >
+                        {{ weather.icon }}
+                    </div>
+                </div>
+
+                <div class="divider"></div>
+
+                <div class="stats">
+
+                    <article class="stat-card">
+                        <div class="stat-heading">
+                            <span class="stat-icon">💧</span>
+                            <span>Humidity</span>
+                        </div>
+
+                        <div class="stat-value">
+                            {{ weather.humidity }}<span class="stat-unit">{{ weather.humidity_unit }}</span>
+                        </div>
+
+                        <p class="stat-note">
+                            Moisture in the air
+                        </p>
+                    </article>
+
+                    <article class="stat-card">
+                        <div class="stat-heading">
+                            <span class="stat-icon">💨</span>
+                            <span>Wind speed</span>
+                        </div>
+
+                        <div class="stat-value">
+                            {{ weather.wind_speed }}
+                            <span class="stat-unit">{{ weather.wind_unit }}</span>
+                        </div>
+
+                        <p class="stat-note">
+                            Wind at the location
+                        </p>
+                    </article>
+
+                </div>
+
+                <p class="reading-time">
+                    🕒 Weather reading time: {{ weather.time }}
+                </p>
+
+            </section>
+
+        {% elif not error %}
+            <section class="empty-state">
+                <div class="empty-icon">🌍</div>
+
+                <h3>Your next destination?</h3>
+
+                <p>
+                    Enter a city above and press Search weather
+                    to see its temperature, humidity and wind speed.
+                </p>
+            </section>
+        {% endif %}
+
+        <footer class="footer">
+            <p>Designed with <span>♥</span> using Python & Flask</p>
+            <p>Weather data powered by Open-Meteo</p>
+            <p>Deepak's First Project Whil leaning Api's</p>
+        </footer>
+
+    </main>
+</body>
+</html>
